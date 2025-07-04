@@ -33,11 +33,6 @@ CREATE TABLE book_copies (
                              book_id INT NOT NULL REFERENCES books(id) ON DELETE CASCADE,
                              status VARCHAR(20) NOT NULL CHECK (status IN ('DISPONIBLE', 'EMPRUNTE', 'RESERVE'))
 );
-CREATE TABLE book_copies_number (
-                             id SERIAL PRIMARY KEY,
-                             book_copy_id INT NOT NULL REFERENCES book_copies(id),
-                             number INT NOT NULL
-);
 
 -- 📖 Table des emprunts
 CREATE TABLE loans (
@@ -75,4 +70,14 @@ CREATE TABLE holidays (
                           id SERIAL PRIMARY KEY,
                           holiday_date DATE UNIQUE NOT NULL,
                           name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE activity_logs (
+                               id SERIAL PRIMARY KEY,
+                               user_id INT REFERENCES users(id),
+                               action_type VARCHAR(50) NOT NULL CHECK (action_type IN (
+                                                                                       'EMPRUNT', 'RETOUR', 'RESERVATION', 'PROLONGATION', 'PENALITE', 'CREATION_LIVRE', 'SUPPRESSION_LIVRE', 'CONNEXION', 'MODIFICATION_UTILISATEUR'
+                                   )),
+                               description TEXT,
+                               created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
