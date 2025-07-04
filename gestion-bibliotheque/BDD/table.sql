@@ -109,3 +109,5 @@ CREATE TABLE languages (
 ALTER TABLE books
     ADD COLUMN category_id INTEGER REFERENCES book_categories(id),
     ADD COLUMN language_id INTEGER REFERENCES languages(id);
+
+ALTER TABLE loans ADD COLUMN loan_type VARCHAR(20) NOT NULL;

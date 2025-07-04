@@ -24,6 +24,9 @@ public class Penalty {
 
     private String reason;
 
+    @Column(nullable = false)
+    private boolean active;
+
     // Constructeur vide
     public Penalty() {
     }
@@ -38,6 +41,14 @@ public class Penalty {
     }
 
     // Getters et setters
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;

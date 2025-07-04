@@ -21,11 +21,18 @@ public class Reservation {
     @JoinColumn(name = "book_id")
     private Book book;
 
+    @Column(name = "available_from")
+    private LocalDate availableFrom;
+
     @Column(name = "reservation_date")
     private LocalDate reservationDate;
 
     @Column(name = "notified")
     private boolean notified;
+
+
+    @Column(nullable = false)
+    private boolean active;
 
     // Constructeur vide
     public Reservation() {
@@ -41,6 +48,14 @@ public class Reservation {
     }
 
     // Getters et setters
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
 
     public Long getId() {
         return id;
@@ -80,5 +95,13 @@ public class Reservation {
 
     public void setNotified(boolean notified) {
         this.notified = notified;
+    }
+
+    public LocalDate getAvailableFrom() {
+        return availableFrom;
+    }
+
+    public void setAvailableFrom(LocalDate availableFrom) {
+        this.availableFrom = availableFrom;
     }
 }

@@ -98,6 +98,7 @@ public class LoanServiceImpl implements LoanService {
         loan.setDueDate(dueDate);
         loan.setExtended(false);
         loan.setReturnDate(null);
+        loan.setLoanType(loanType);
 
         // 6. Marquer le livre comme emprunté
         availableCopy.setStatus(CopyStatus.EMPRUNTE);
@@ -114,6 +115,10 @@ public class LoanServiceImpl implements LoanService {
 
     @Override
     public Loan extendLoan(Long loanId) {
+//        boolean isReserved = reservationRepository.existsByBookAndNotifiedFalse(bookCopy.getBook());
+//        if (isReserved) {
+//            throw new BusinessException("Impossible de prolonger : le livre est réservé par un autre utilisateur.");
+//        }
         return null;
     }
 }
