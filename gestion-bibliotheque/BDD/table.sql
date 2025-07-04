@@ -27,6 +27,7 @@ CREATE TABLE books (
                        description TEXT
 );
 
+
 -- 🔖 Table des exemplaires (copies physiques de livres)
 CREATE TABLE book_copies (
                              id SERIAL PRIMARY KEY,
@@ -81,3 +82,30 @@ CREATE TABLE activity_logs (
                                description TEXT,
                                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE loan_policies (
+                               id SERIAL PRIMARY KEY,
+                               user_role VARCHAR(50) NOT NULL,
+                               loan_type VARCHAR(50) NOT NULL,
+                               max_loans INTEGER NOT NULL,
+                               loan_duration_days INTEGER NOT NULL,
+                               max_prolongations INTEGER NOT NULL,
+                               allow_reservation BOOLEAN NOT NULL,
+                               allow_prolongation BOOLEAN NOT NULL,
+                               penalty_days_per_late_day INTEGER NOT NULL
+);
+
+ALTER TABLE loan_policies
+    ADD CONSTRAINT uq_user_role_type UNIQUE (user_role, loan_type);
+
+CREATE TABLE book_categories (
+                                 id SERIAL PRIMARY KEY,
+                                 name VARCHAR(100) NOT NULL UNIQUE
+);
+CREATE TABLE languages (
+                           id SERIAL PRIMARY KEY,
+                           name VARCHAR(50) NOT NULL UNIQUE
+);
+
+ALTER TABLE books
+    ADD COLUMN category_id INTEGER REFERENCES book_categories(id),
+    ADD COLUMN language_id INTEGER REFERENCES languages(id);
