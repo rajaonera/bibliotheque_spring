@@ -28,8 +28,7 @@ public class ActivityLog {
     }
 
     // Constructeur complet
-    public ActivityLog(Long id, User user, String actionType, String description, LocalDateTime timestamp) {
-        this.id = id;
+    public ActivityLog( User user, String actionType, String description, LocalDateTime timestamp) {
         this.user = user;
         this.actionType = actionType;
         this.description = description;

@@ -13,6 +13,7 @@ import com.example.gestion_bibliotheque.exception.BusinessException;
 import com.example.gestion_bibliotheque.repository.book.BookCopyRepository;
 import com.example.gestion_bibliotheque.repository.book.BookRepository;
 import com.example.gestion_bibliotheque.repository.loan.HolidayRepository;
+import com.example.gestion_bibliotheque.repository.loan.LoanPolicyRepository;
 import com.example.gestion_bibliotheque.repository.loan.LoanRepository;
 import com.example.gestion_bibliotheque.repository.loan.PenaltyRepository;
 import com.example.gestion_bibliotheque.repository.logs.LogRepository;
@@ -41,6 +42,7 @@ public class LoanServiceImpl implements LoanService {
     private final HolidayRepository holidayRepository;
     private final PenaltyRepository penaltyRepository;
     private final LogRepository logRepository;
+    private final LoanPolicyRepository loanPolicyRepository;
 
     public LoanServiceImpl(
             UserRepository userRepository,
@@ -50,8 +52,8 @@ public class LoanServiceImpl implements LoanService {
             LoanPolicyService loanPolicyService,
             HolidayRepository holidayRepository,
             PenaltyRepository penaltyRepository,
-            LogRepository logRepository
-    ) {
+            LogRepository logRepository,
+            LoanPolicyRepository loanPolicyRepository) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
@@ -60,6 +62,7 @@ public class LoanServiceImpl implements LoanService {
         this.holidayRepository = holidayRepository;
         this.penaltyRepository = penaltyRepository;
         this.logRepository = logRepository;
+        this.loanPolicyRepository = loanPolicyRepository;
     }
 
     public static boolean isWeekendOrHoliday(LocalDate date ,HolidayRepository holidayRepository) {
@@ -69,8 +72,7 @@ public class LoanServiceImpl implements LoanService {
         return isWeekend || isHoliday;
     }
 
-    @Override
-    public Loan borrowBook(Long userId, Long bookId, LoanType loanType, LocalDate start_date) throws BusinessException {
+    private Loan validateLoanRules(Long userId, Long bookId, LoanType loanType, LocalDate startDate) throws BusinessException {
         // 1. Récupérer l'utilisateur
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new BusinessException("Utilisateur non trouvé"));
@@ -98,16 +100,15 @@ public class LoanServiceImpl implements LoanService {
         if (currentLoans >= policy.getMaxLoans()) {
             throw new BusinessException("Nombre maximal de prêts atteint pour ce profil");
         }
-
+        LocalDate dueDate  = DateUtils.calculateDueDate(startDate,policy);
+        while (isWeekendOrHoliday(dueDate,holidayRepository )) {
+            dueDate = dueDate.plusDays(1);
+        }
         // 5. Créer le prêt
         Loan loan = new Loan();
         loan.setUser(user);
         loan.setBookCopy(availableCopy);
-        loan.setStartDate(start_date);
-        LocalDate dueDate  = DateUtils.calculateDueDate(start_date,policy);
-        while (isWeekendOrHoliday(dueDate,holidayRepository )) {
-            dueDate = dueDate.plusDays(1);
-        }
+        loan.setStartDate(startDate);
         loan.setDueDate(dueDate);
         loan.setExtended(false);
         loan.setReturnDate(null);
@@ -117,8 +118,41 @@ public class LoanServiceImpl implements LoanService {
         availableCopy.setStatus(CopyStatus.EMPRUNTE);
         bookCopyRepository.save(availableCopy);
 
+
+        ActivityLog log = new ActivityLog(
+                loan.getUser(),
+                "EMPRUNT",
+                "Emprunt du livre : " + availableCopy.getCode(),
+                dueDate.atStartOfDay());
+
+        logRepository.save(log);
+        return loan;
+
+    }
+
+    @Override
+    public Loan borrowBook(Long userId, Long bookId, LoanType loanType, LocalDate start_date) throws BusinessException {
+//        validation de pret
+        Loan loan = validateLoanRules(userId, bookId, loanType, start_date);
+
+
         // 7. Enregistrer et retourner le prêt
         return loanRepository.save(loan);
+    }
+
+    private void checkingPenalty(LocalDate returnDate, Loan loan){
+        // Vérifier le retard
+        if (returnDate.isAfter(loan.getDueDate())) {
+            int daysLate = (int) ChronoUnit.DAYS.between(loan.getDueDate(), returnDate);
+            Penalty penalty  = new Penalty();
+            penalty.setUser(loan.getUser());
+            penalty.setStartDate(returnDate);
+            penalty.setEndDate(returnDate.plusDays(daysLate));
+            penalty.setReason("Retour en retard de " + daysLate + " jour(s)");
+            penalty.setActive(true);
+
+            penaltyRepository.save(penalty);
+        }
     }
 
     public Loan returnBook(Long loanId, LocalDate returnDate) throws BusinessException {
@@ -133,6 +167,8 @@ public class LoanServiceImpl implements LoanService {
             throw new BusinessException("La date de retour ne peut pas être antérieure à la date de prêt");
         }
 
+         checkingPenalty(returnDate, loan);
+
         // Mettre à jour le prêt
         loan.setReturned(true);
         loan.setReturnDate(returnDate);
@@ -142,26 +178,13 @@ public class LoanServiceImpl implements LoanService {
         copy.setStatus(CopyStatus.DISPONIBLE);
         bookCopyRepository.save(copy);
 
-        // Vérifier le retard
-        if (returnDate.isAfter(loan.getDueDate())) {
-            int daysLate = (int) ChronoUnit.DAYS.between(loan.getDueDate(), returnDate);
-
-            Penalty penalty = new Penalty();
-            penalty.setUser(loan.getUser());
-            penalty.setStartDate(returnDate);
-            penalty.setEndDate(returnDate.plusDays(daysLate));
-            penalty.setReason("Retour en retard de " + daysLate + " jour(s)");
-            penalty.setActive(true);
-
-            penaltyRepository.save(penalty);
-        }
-
         // Logger l’action
-        ActivityLog log = new ActivityLog();
-        log.setUser(loan.getUser());
-        log.setActionType("RETOUR");
-        log.setDescription("Retour du livre : " + copy.getCode());
-        log.setTimestamp(LocalDateTime.now());
+        ActivityLog log = new ActivityLog(
+                loan.getUser(),
+                "RETOUR",
+                "Retour du livre : " + copy.getCode(),
+                returnDate.atStartOfDay());
+
         logRepository.save(log);
 
         return loanRepository.save(loan);

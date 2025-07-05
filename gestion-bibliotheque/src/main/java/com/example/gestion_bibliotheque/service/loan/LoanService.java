@@ -20,4 +20,5 @@ public interface  LoanService {
     List<Loan> getLoans(LocalDate start_date, LocalDate end_date);
     List<Loan> getLoans(LocalDate start_date, LocalDate end_date, LoanType loanType);
     List<Loan> getLoans();
+
 }

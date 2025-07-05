@@ -26,4 +26,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findAllByStartDateAndAndDueDate(LocalDate start_date, LocalDate end_date);
 
     List<Loan> findAllByStartDateAndDueDateAndLoanType(LocalDate startDate, LocalDate dueDate, LoanType loanType);
+
+    List<Loan> findLoansByUserAndReturnDateIsEmptyAndReturnDateIsFalse(User user);
 }
