@@ -2,6 +2,8 @@ package com.example.gestion_bibliotheque.entity.book;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -27,6 +29,7 @@ public class Book {
     private Language language;
 
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<BookCopy> copies;
 
     // Constructeur vide
@@ -41,6 +44,15 @@ public class Book {
         this.isbn = isbn;
         this.category = category;
         this.language = language;
+    }
+
+    public Book(String title, String author, String isbn, BookCategory cat, Language lang) {
+        this.title = title;
+        this.author = author;
+        this.isbn = isbn;
+        this.category = cat;
+        this.language = lang;
+        this.copies = new ArrayList<>();
     }
 
     // Getters et setters
