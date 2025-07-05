@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 @RestController
-@RequestMapping("/api/loans")
+@RequestMapping("/loans")
 public class LoanController {
 
     private final LoanService loanService;
@@ -17,13 +17,17 @@ public class LoanController {
     public LoanController(LoanService loanService) {
         this.loanService = loanService;
     }
-    @GetMapping
+    @GetMapping()
     public ResponseEntity<?> getAllLoans() {
+        System.out.println("📣 getAllLoans() appelé !");
         List<Loan> loans = loanService.getLoans();
         return ResponseEntity.ok(loans);
     }
     @PostMapping("/borrow")
     public ResponseEntity<?> borrowBook(@RequestBody BorrowRequest request) {
+        System.out.println("📣 borrowBook() appelé !");
+        System.out.println("📣 Start Due : "+request.getStartDate());
+
         try {
             Loan loan = loanService.borrowBook(
                     request.getUserId(),
@@ -31,6 +35,7 @@ public class LoanController {
                     request.getLoanType(),
                     request.getStartDate()
             );
+            System.out.println("📣 End Due : "+loan.getDueDate());
             return ResponseEntity.ok(loan);
         } catch (BusinessException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

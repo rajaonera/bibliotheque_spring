@@ -1,7 +1,7 @@
 package com.example.gestion_bibliotheque.enums;
 
 public enum LoanType {
-    A_DOMICILE,
+    DOMICILE,
     SUR_PLACE
 }
 
