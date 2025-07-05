@@ -3,20 +3,21 @@ package com.example.gestion_bibliotheque.controller.book;
 import com.example.gestion_bibliotheque.dto.book.BookDTO;
 import com.example.gestion_bibliotheque.dto.book.BookDetailsDTO;
 import com.example.gestion_bibliotheque.entity.book.Book;
-import com.example.gestion_bibliotheque.service.book.BookService;
+import com.example.gestion_bibliotheque.service.book.impl.BookServiceImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import org.springframework.http.ResponseEntity;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/books")
 public class BookController {
 
-    private final BookService bookService;
+    private final BookServiceImpl bookService;
 
-    public BookController(BookService bookService) {
+    public BookController(BookServiceImpl bookService) {
         this.bookService = bookService;
     }
 
@@ -51,5 +52,10 @@ public class BookController {
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) {
         bookService.deleteBook(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/{id}/stats")
+    public Map<String, Object> getBookStats(@PathVariable Long id) {
+        return bookService.getBookCopyStats(id);
     }
 }
