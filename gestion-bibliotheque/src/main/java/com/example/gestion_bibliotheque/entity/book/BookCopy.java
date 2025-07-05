@@ -1,5 +1,6 @@
 package com.example.gestion_bibliotheque.entity.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import com.example.gestion_bibliotheque.enums.CopyStatus;
 
@@ -18,6 +19,7 @@ public class BookCopy {
 
     @ManyToOne
     @JoinColumn(name = "book_id")
+    @JsonIgnore
     private Book book;
 
     // Constructeur vide

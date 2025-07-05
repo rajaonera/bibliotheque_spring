@@ -43,8 +43,10 @@ public class LoanController {
     }
     @PostMapping("/{loanId}/return")
     public ResponseEntity<?> returnBook(@PathVariable Long loanId, @RequestBody ReturnLoanRequest request) {
+        System.out.println("📣 borrowBook() appelé !");
         try {
             Loan returnedLoan = loanService.returnBook(loanId, request.getReturnDate());
+//            System.out.println("📣 Start Due : "+request.getStartDate());
             return ResponseEntity.ok(returnedLoan);
         } catch (BusinessException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

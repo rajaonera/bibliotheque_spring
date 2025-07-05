@@ -1,5 +1,7 @@
 package com.example.gestion_bibliotheque.entity.user;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import java.util.List;
 import com.example.gestion_bibliotheque.enums.UserProfil;
@@ -33,12 +35,15 @@ public class User {
 
     // Relations
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Loan> loans;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Reservation> reservations;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Penalty> penalties;
 
     // Constructeur vide

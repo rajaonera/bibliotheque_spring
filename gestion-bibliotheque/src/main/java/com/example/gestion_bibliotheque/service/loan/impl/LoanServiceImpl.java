@@ -13,7 +13,6 @@ import com.example.gestion_bibliotheque.exception.BusinessException;
 import com.example.gestion_bibliotheque.repository.book.BookCopyRepository;
 import com.example.gestion_bibliotheque.repository.book.BookRepository;
 import com.example.gestion_bibliotheque.repository.loan.HolidayRepository;
-import com.example.gestion_bibliotheque.repository.loan.LoanPolicyRepository;
 import com.example.gestion_bibliotheque.repository.loan.LoanRepository;
 import com.example.gestion_bibliotheque.repository.loan.PenaltyRepository;
 import com.example.gestion_bibliotheque.repository.logs.LogRepository;
@@ -24,7 +23,6 @@ import com.example.gestion_bibliotheque.service.loan.LoanService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -42,7 +40,6 @@ public class LoanServiceImpl implements LoanService {
     private final HolidayRepository holidayRepository;
     private final PenaltyRepository penaltyRepository;
     private final LogRepository logRepository;
-    private final LoanPolicyRepository loanPolicyRepository;
 
     public LoanServiceImpl(
             UserRepository userRepository,
@@ -52,8 +49,7 @@ public class LoanServiceImpl implements LoanService {
             LoanPolicyService loanPolicyService,
             HolidayRepository holidayRepository,
             PenaltyRepository penaltyRepository,
-            LogRepository logRepository,
-            LoanPolicyRepository loanPolicyRepository) {
+            LogRepository logRepository) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
         this.bookCopyRepository = bookCopyRepository;
@@ -62,7 +58,6 @@ public class LoanServiceImpl implements LoanService {
         this.holidayRepository = holidayRepository;
         this.penaltyRepository = penaltyRepository;
         this.logRepository = logRepository;
-        this.loanPolicyRepository = loanPolicyRepository;
     }
 
     public static boolean isWeekendOrHoliday(LocalDate date ,HolidayRepository holidayRepository) {
@@ -141,18 +136,37 @@ public class LoanServiceImpl implements LoanService {
     }
 
     private void checkingPenalty(LocalDate returnDate, Loan loan){
+    ActivityLog log ;
         // Vérifier le retard
         if (returnDate.isAfter(loan.getDueDate())) {
             int daysLate = (int) ChronoUnit.DAYS.between(loan.getDueDate(), returnDate);
-            Penalty penalty  = new Penalty();
+
+            Penalty penalty = new Penalty();
             penalty.setUser(loan.getUser());
             penalty.setStartDate(returnDate);
+            penalty.setDays(daysLate);
             penalty.setEndDate(returnDate.plusDays(daysLate));
             penalty.setReason("Retour en retard de " + daysLate + " jour(s)");
             penalty.setActive(true);
 
             penaltyRepository.save(penalty);
+
+             log = new ActivityLog(
+                    loan.getUser(),
+                    "PENALITE",
+                    "Pénalité appliquée pour retour tardif du livre : " + loan.getBookCopy().getCode() +
+                            " (" + daysLate + " jour(s) de retard)",
+                    returnDate.atStartOfDay());
+
+        }else {
+             log = new ActivityLog(
+                    loan.getUser(),
+                    "RETOUR",
+                    "Retour du livre : " + loan.getBookCopy().getCode(),
+                    returnDate.atStartOfDay());
         }
+
+        logRepository.save(log);
     }
 
     public Loan returnBook(Long loanId, LocalDate returnDate) throws BusinessException {

@@ -3,6 +3,8 @@ package com.example.gestion_bibliotheque.entity.loan;
 import com.example.gestion_bibliotheque.entity.book.BookCopy;
 import com.example.gestion_bibliotheque.entity.user.User;
 import com.example.gestion_bibliotheque.enums.LoanType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 
@@ -15,7 +17,7 @@ public class Loan {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @JoinColumn(name = "user_id")
     private User user;
 
     @ManyToOne

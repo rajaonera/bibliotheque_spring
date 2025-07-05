@@ -26,6 +26,8 @@ public class Penalty {
 
     @Column(nullable = false)
     private boolean active;
+    @Column(nullable = false)
+    private int days;
 
     // Constructeur vide
     public Penalty() {
@@ -88,5 +90,13 @@ public class Penalty {
 
     public void setReason(String reason) {
         this.reason = reason;
+    }
+
+    public int getDays() {
+        return days;
+    }
+
+    public void setDays(int days) {
+        this.days = days;
     }
 }

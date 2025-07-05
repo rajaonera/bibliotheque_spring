@@ -1,5 +1,6 @@
 package com.example.gestion_bibliotheque.entity.book;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import java.util.List;
 
