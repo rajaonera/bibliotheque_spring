@@ -19,4 +19,7 @@ public interface UserService {
     void activateUser(Long id);
 
     void deactivateUser(Long id);
+
+    Optional<User> authenticate(String email, String password);
+
 }
