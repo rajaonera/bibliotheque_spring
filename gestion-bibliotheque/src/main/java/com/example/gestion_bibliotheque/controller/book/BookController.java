@@ -58,4 +58,9 @@ public class BookController {
     public Map<String, Object> getBookStats(@PathVariable Long id) {
         return bookService.getBookCopyStats(id);
     }
+
+    @GetMapping("/stats")
+    public List< Map<String, Object>> getBookStats() {
+        return bookService.getAllBookCopyStats();
+    }
 }

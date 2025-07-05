@@ -114,6 +114,7 @@ public class BookServiceImpl implements BookService {
         bookRepository.deleteById(id);
     }
 
+    @Override
     public Map<String, Object> getBookCopyStats(Long bookId) {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new RuntimeException("Livre non trouvé"));
@@ -136,4 +137,34 @@ public class BookServiceImpl implements BookService {
 
         return result;
     }
+
+    @Override
+    public List<Map<String, Object>> getAllBookCopyStats() {
+        List<Book> books = bookRepository.findAll(); // On récupère tous les livres
+
+        List<Map<String, Object>> statsList = new ArrayList<>();
+
+        for (Book book : books) {
+            List<BookCopy> copies = book.getCopies();
+
+            Map<CopyStatus, Long> countByStatus = copies.stream()
+                    .collect(Collectors.groupingBy(BookCopy::getStatus, Collectors.counting()));
+
+            Map<String, Object> result = new HashMap<>();
+            result.put("bookId", book.getId());
+            result.put("title", book.getTitle());
+            result.put("totalCopies", copies.size());
+
+            Map<String, Long> statusMap = new HashMap<>();
+            for (CopyStatus status : CopyStatus.values()) {
+                statusMap.put(status.name(), countByStatus.getOrDefault(status, 0L));
+            }
+            result.put("statusBreakdown", statusMap);
+
+            statsList.add(result);
+        }
+
+        return statsList;
+    }
+
 }

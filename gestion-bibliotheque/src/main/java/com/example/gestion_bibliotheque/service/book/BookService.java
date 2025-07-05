@@ -7,6 +7,7 @@ import com.example.gestion_bibliotheque.entity.book.Book;
 import com.example.gestion_bibliotheque.entity.book.BookCopy;
 
 import java.util.List;
+import java.util.Map;
 
 public interface BookService {
 
@@ -19,4 +20,8 @@ public interface BookService {
     Book createBook(BookDTO dto);
 
     Book updateBook(Long id, BookDTO dto);
+
+    Map<String, Object> getBookCopyStats(Long bookId);
+
+    List<Map<String, Object>> getAllBookCopyStats();
 }
