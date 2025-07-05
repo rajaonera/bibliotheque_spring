@@ -4,7 +4,7 @@ import com.example.gestion_bibliotheque.entity.user.User;
 import com.example.gestion_bibliotheque.repository.user.UserRepository;
 import com.example.gestion_bibliotheque.service.user.UserService;
 import org.springframework.stereotype.Service;
-import com.example.gestion_bibliotheque.enums.UserRole;
+import com.example.gestion_bibliotheque.enums.UserProfil;
 
 import java.util.List;
 import java.util.Optional;
@@ -75,7 +75,7 @@ public class UserServiceImpl implements UserService {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             // Compare mot de passe en clair (à remplacer par un hash + encoder)
-            if (user.getPassword().equals(password) && user.getRole() == UserRole.BIBLIOTHECAIRE && user.isActive()) {
+            if (user.getPassword().equals(password) && user.getProfile() == UserProfil.BIBLIOTHECAIRE && user.isActive()) {
                 return Optional.of(user);
             }
         }
