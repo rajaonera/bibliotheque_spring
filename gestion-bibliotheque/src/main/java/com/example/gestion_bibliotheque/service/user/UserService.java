@@ -22,4 +22,5 @@ public interface UserService {
 
     Optional<User> authenticate(String email, String password);
 
+    Optional<User> findByEmail(String username);
 }
