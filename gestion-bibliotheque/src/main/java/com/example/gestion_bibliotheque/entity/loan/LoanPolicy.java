@@ -1,6 +1,6 @@
 package com.example.gestion_bibliotheque.entity.loan;
 
-import com.example.gestion_bibliotheque.enums.UserRole;
+import com.example.gestion_bibliotheque.enums.UserProfil;
 import com.example.gestion_bibliotheque.enums.LoanType;
 import jakarta.persistence.*;
 
@@ -14,7 +14,7 @@ public class LoanPolicy {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private UserRole userRole;
+    private UserProfil userProfil;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -43,10 +43,10 @@ public class LoanPolicy {
     }
 
     // Constructeur complet
-    public LoanPolicy(Long id, UserRole userRole, LoanType loanType, int maxLoans, int loanDurationDays,
+    public LoanPolicy(Long id, UserProfil userProfil, LoanType loanType, int maxLoans, int loanDurationDays,
                       int maxProlongations, boolean allowReservation, boolean allowProlongation, int penaltyDaysPerLateDay) {
         this.id = id;
-        this.userRole = userRole;
+        this.userProfil = userProfil;
         this.loanType = loanType;
         this.maxLoans = maxLoans;
         this.loanDurationDays = loanDurationDays;
@@ -64,14 +64,6 @@ public class LoanPolicy {
 
     public void setId(Long id) {
         this.id = id;
-    }
-
-    public UserRole getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(UserRole userRole) {
-        this.userRole = userRole;
     }
 
     public LoanType getLoanType() {
@@ -128,5 +120,13 @@ public class LoanPolicy {
 
     public void setPenaltyDaysPerLateDay(int penaltyDaysPerLateDay) {
         this.penaltyDaysPerLateDay = penaltyDaysPerLateDay;
+    }
+
+    public UserProfil getUserProfil() {
+        return userProfil;
+    }
+
+    public void setUserProfil(UserProfil userProfil) {
+        this.userProfil = userProfil;
     }
 }

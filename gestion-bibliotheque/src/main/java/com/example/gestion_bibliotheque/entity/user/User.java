@@ -2,7 +2,7 @@ package com.example.gestion_bibliotheque.entity.user;
 
 import jakarta.persistence.*;
 import java.util.List;
-import com.example.gestion_bibliotheque.enums.UserRole;
+import com.example.gestion_bibliotheque.enums.UserProfil;
 import com.example.gestion_bibliotheque.entity.loan.Loan;
 import com.example.gestion_bibliotheque.entity.loan.Reservation;
 import com.example.gestion_bibliotheque.entity.loan.Penalty;
@@ -23,9 +23,13 @@ public class User {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private UserRole role;
+    private UserProfil profile;
 
     private boolean active;
+
+    @ManyToOne
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
 
     // Relations
     @OneToMany(mappedBy = "user")
@@ -41,17 +45,20 @@ public class User {
     public User() {
     }
 
-    // Constructeur complet (sans collections pour éviter surcharge)
-    public User(Long id, String name, String email, String password, UserRole role, boolean active) {
+    public User(Long id, String name, String email, String password, UserProfil profile, boolean active, Role role, List<Loan> loans, List<Reservation> reservations, List<Penalty> penalties) {
         this.id = id;
         this.name = name;
         this.email = email;
         this.password = password;
-        this.role = role;
+        this.profile = profile;
         this.active = active;
+        this.role = role;
+        this.loans = loans;
+        this.reservations = reservations;
+        this.penalties = penalties;
     }
 
-    // Getters et setters
+// Getters et setters
 
     public Long getId() {
         return id;
@@ -85,14 +92,6 @@ public class User {
         this.password = password;
     }
 
-    public UserRole getRole() {
-        return role;
-    }
-
-    public void setRole(UserRole role) {
-        this.role = role;
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -123,5 +122,21 @@ public class User {
 
     public void setPenalties(List<Penalty> penalties) {
         this.penalties = penalties;
+    }
+
+    public UserProfil getProfile() {
+        return profile;
+    }
+
+    public void setProfile(UserProfil profile) {
+        this.profile = profile;
+    }
+
+    public Role getRole() {
+        return role;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
     }
 }

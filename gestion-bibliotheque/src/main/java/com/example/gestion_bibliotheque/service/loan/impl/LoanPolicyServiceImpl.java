@@ -2,7 +2,7 @@ package com.example.gestion_bibliotheque.service.loan.impl;
 
 import com.example.gestion_bibliotheque.entity.loan.LoanPolicy;
 import com.example.gestion_bibliotheque.enums.LoanType;
-import com.example.gestion_bibliotheque.enums.UserRole;
+import com.example.gestion_bibliotheque.enums.UserProfil;
 import com.example.gestion_bibliotheque.repository.loan.LoanPolicyRepository;
 import com.example.gestion_bibliotheque.service.loan.LoanPolicyService;
 
@@ -20,7 +20,7 @@ public class LoanPolicyServiceImpl implements LoanPolicyService {
     }
 
     @Override
-    public Optional<LoanPolicy> findByUserRoleAndLoanType(UserRole userRole, LoanType loanType) {
-        return loanPolicyRepository.findByUserRoleAndLoanType(userRole, loanType);
+    public Optional<LoanPolicy> findByUserRoleAndLoanType(UserProfil userProfil, LoanType loanType) {
+        return loanPolicyRepository.findByUserProfilAndLoanType(userProfil, loanType);
     }
 }
