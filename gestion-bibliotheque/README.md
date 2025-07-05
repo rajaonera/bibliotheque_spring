@@ -30,7 +30,7 @@ Développer une application web permettant la **gestion complète des livres, de
 
 - **Gestion des livres** : Ajout, modification, suppression, recherche
 - **Gestion des utilisateurs** : Profils avec rôles (`Étudiant`, `Professeur`, `Professionnel`, `Anonyme`)
-- **Emprunt & retour** : Contrôle des durées et des quantités selon le profil
+- **Emprunt & retour** : Contrôle des durées et des quantités selon le profile
 - **Pénalités** : Application automatique des jours de blocage en cas de retard
 - **Réservations** : Système de réservation avec notification console/email
 - **Jours fériés** : Calculs ajustés pour les retours
@@ -41,7 +41,7 @@ Développer une application web permettant la **gestion complète des livres, de
 
 ## 🧱 Structure des entités (JPA)
 
-- `User` : id, nom, email, mot de passe, profil, liste des prêts
+- `User` : id, nom, email, mot de passe, profile, liste des prêts
 - `Role` : id, nom (`ADMIN`, `USER`)
 - `Book` : id, titre, auteur, ISBN, langue, etc.
 - `BookCopy` : id, statut (`DISPONIBLE`, `EMPRUNTÉ`, `RÉSERVÉ`), référence `Book`

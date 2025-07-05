@@ -4,6 +4,8 @@ import com.example.gestion_bibliotheque.entity.book.Book;
 import com.example.gestion_bibliotheque.entity.book.BookCopy;
 import com.example.gestion_bibliotheque.entity.loan.Loan;
 import com.example.gestion_bibliotheque.entity.loan.LoanPolicy;
+import com.example.gestion_bibliotheque.entity.loan.Penalty;
+import com.example.gestion_bibliotheque.entity.logs.ActivityLog;
 import com.example.gestion_bibliotheque.entity.user.User;
 import com.example.gestion_bibliotheque.enums.CopyStatus;
 import com.example.gestion_bibliotheque.enums.LoanType;
@@ -12,6 +14,8 @@ import com.example.gestion_bibliotheque.repository.book.BookCopyRepository;
 import com.example.gestion_bibliotheque.repository.book.BookRepository;
 import com.example.gestion_bibliotheque.repository.loan.HolidayRepository;
 import com.example.gestion_bibliotheque.repository.loan.LoanRepository;
+import com.example.gestion_bibliotheque.repository.loan.PenaltyRepository;
+import com.example.gestion_bibliotheque.repository.logs.LogRepository;
 import com.example.gestion_bibliotheque.repository.user.UserRepository;
 import com.example.gestion_bibliotheque.service.loan.DateUtils;
 import com.example.gestion_bibliotheque.service.loan.LoanPolicyService;
@@ -19,6 +23,9 @@ import com.example.gestion_bibliotheque.service.loan.LoanService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 import java.time.DayOfWeek;
 
@@ -32,6 +39,8 @@ public class LoanServiceImpl implements LoanService {
     private final LoanRepository loanRepository;
     private final LoanPolicyService loanPolicyService;
     private final HolidayRepository holidayRepository;
+    private final PenaltyRepository penaltyRepository;
+    private final LogRepository logRepository;
 
     public LoanServiceImpl(
             UserRepository userRepository,
@@ -39,7 +48,9 @@ public class LoanServiceImpl implements LoanService {
             BookCopyRepository bookCopyRepository,
             LoanRepository loanRepository,
             LoanPolicyService loanPolicyService,
-            HolidayRepository holidayRepository
+            HolidayRepository holidayRepository,
+            PenaltyRepository penaltyRepository,
+            LogRepository logRepository
     ) {
         this.userRepository = userRepository;
         this.bookRepository = bookRepository;
@@ -47,6 +58,8 @@ public class LoanServiceImpl implements LoanService {
         this.loanRepository = loanRepository;
         this.loanPolicyService = loanPolicyService;
         this.holidayRepository = holidayRepository;
+        this.penaltyRepository = penaltyRepository;
+        this.logRepository = logRepository;
     }
 
     public static boolean isWeekendOrHoliday(LocalDate date ,HolidayRepository holidayRepository) {
@@ -78,7 +91,7 @@ public class LoanServiceImpl implements LoanService {
         BookCopy availableCopy = (BookCopy) availableCopyOpt.get();
 
         // 4. Règles métier via LoanPolicy
-        LoanPolicy policy = loanPolicyService.findByUserRoleAndLoanType(user.getRole(), loanType)
+        LoanPolicy policy = loanPolicyService.findByUserRoleAndLoanType(user.getProfile(), loanType)
                 .orElseThrow(() -> new BusinessException("Politique de prêt introuvable pour ce profil"));
 
         int currentLoans = loanRepository.countByUserAndReturnedFalse(user);
@@ -108,9 +121,50 @@ public class LoanServiceImpl implements LoanService {
         return loanRepository.save(loan);
     }
 
-    @Override
-    public Loan returnBook(Long loanId) {
-        return null;
+    public Loan returnBook(Long loanId, LocalDate returnDate) throws BusinessException {
+        Loan loan = loanRepository.findById(loanId)
+                .orElseThrow(() -> new BusinessException("Prêt introuvable"));
+
+        if (loan.isReturned()) {
+            throw new BusinessException("Le livre a déjà été retourné");
+        }
+
+        if (returnDate.isBefore(loan.getStartDate())) {
+            throw new BusinessException("La date de retour ne peut pas être antérieure à la date de prêt");
+        }
+
+        // Mettre à jour le prêt
+        loan.setReturned(true);
+        loan.setReturnDate(returnDate);
+
+        // Mettre l'exemplaire en DISPONIBLE
+        BookCopy copy = loan.getBookCopy();
+        copy.setStatus(CopyStatus.DISPONIBLE);
+        bookCopyRepository.save(copy);
+
+        // Vérifier le retard
+        if (returnDate.isAfter(loan.getDueDate())) {
+            int daysLate = (int) ChronoUnit.DAYS.between(loan.getDueDate(), returnDate);
+
+            Penalty penalty = new Penalty();
+            penalty.setUser(loan.getUser());
+            penalty.setStartDate(returnDate);
+            penalty.setEndDate(returnDate.plusDays(daysLate));
+            penalty.setReason("Retour en retard de " + daysLate + " jour(s)");
+            penalty.setActive(true);
+
+            penaltyRepository.save(penalty);
+        }
+
+        // Logger l’action
+        ActivityLog log = new ActivityLog();
+        log.setUser(loan.getUser());
+        log.setActionType("RETOUR");
+        log.setDescription("Retour du livre : " + copy.getCode());
+        log.setTimestamp(LocalDateTime.now());
+        logRepository.save(log);
+
+        return loanRepository.save(loan);
     }
 
     @Override
@@ -120,5 +174,26 @@ public class LoanServiceImpl implements LoanService {
 //            throw new BusinessException("Impossible de prolonger : le livre est réservé par un autre utilisateur.");
 //        }
         return null;
+    }
+
+    @Override
+    public List<Loan> getLoans(LocalDate start_date) {
+        return loanRepository.findAllByStartDate(start_date);
+    }
+
+    @Override
+    public List<Loan> getLoans(LocalDate start_date, LocalDate end_date) {
+        return loanRepository.findAllByStartDateAndAndDueDate(start_date,end_date);
+    }
+
+    @Override
+    public List<Loan> getLoans(LocalDate start_date, LocalDate end_date, LoanType loanType) {
+        return loanRepository.findAllByStartDateAndDueDateAndLoanType(start_date, end_date, loanType);
+
+    }
+
+    @Override
+    public List<Loan> getLoans() {
+        return loanRepository.findAll();
     }
 }
