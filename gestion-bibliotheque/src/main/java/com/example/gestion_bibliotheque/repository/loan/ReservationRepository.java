@@ -13,4 +13,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // Nombre de réservations actives d’un utilisateur
     long countByUserIdAndActiveTrue(Long userId);
+
+    List<Reservation> findByUserId(Long userId);
+
+    boolean existsByUserIdAndBookIdAndActiveTrue(Long userId, Long bookId);
 }
