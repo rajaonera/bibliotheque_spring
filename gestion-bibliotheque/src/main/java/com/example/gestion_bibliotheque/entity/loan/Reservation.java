@@ -1,5 +1,6 @@
 package com.example.gestion_bibliotheque.entity.loan;
 
+import com.example.gestion_bibliotheque.enums.ReservationStatus;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import com.example.gestion_bibliotheque.entity.user.User;
@@ -24,15 +25,19 @@ public class Reservation {
     @Column(name = "available_from")
     private LocalDate availableFrom;
 
-    @Column(name = "reservation_date")
+    @Column(name = "reservation_date", nullable = false)
     private LocalDate reservationDate;
 
-    @Column(name = "notified")
-    private boolean notified;
+    @Column(name = "notified",nullable = false)
+    private boolean notified = false;
 
 
     @Column(nullable = false)
-    private boolean active;
+    private boolean active = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReservationStatus status;
 
     // Constructeur vide
     public Reservation() {
@@ -103,5 +108,13 @@ public class Reservation {
 
     public void setAvailableFrom(LocalDate availableFrom) {
         this.availableFrom = availableFrom;
+    }
+
+    public ReservationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ReservationStatus status) {
+        this.status = status;
     }
 }
