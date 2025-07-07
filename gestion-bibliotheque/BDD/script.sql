@@ -12,24 +12,17 @@ create table users
     name       varchar(255)                                        not null,
     email      varchar(255)                                        not null,
     password   varchar(255)                                        not null,
-    profile    varchar(50)                                         not null,
+    profile    varchar(255)                                        not null,
     role_id    integer                                             not null,
     created_at timestamp default CURRENT_TIMESTAMP,
     active     boolean                                             not null,
-    role       varchar(255),
-    username   varchar(255)                                        not null,
     primary key (id),
     unique (email),
-    constraint ukr43af9ap4edm43mmtq01oddj6
-        unique (username),
     foreign key (role_id) references roles,
     constraint users_profile_check
         check ((profile)::text = ANY
-               ((ARRAY ['ETUDIANT'::character varying, 'PROFESSEUR'::character varying, 'PROFESSIONNEL'::character varying, 'ANONYME'::character varying, 'BIBLIOTHECAIRE'::character varying])::text[])),
-    constraint users_role_check
-        check ((role)::text = ANY
-               ((ARRAY ['ETUDIANT'::character varying, 'PROFESSEUR'::character varying, 'PROFESSIONNEL'::character varying, 'ANONYME'::character varying, 'BIBLIOTHECAIRE'::character varying])::text[]))
-);
+            (ARRAY [('ETUDIANT'::character varying)::text, ('PROFESSEUR'::character varying)::text, ('PROFESSIONNEL'::character varying)::text, ('ANONYME'::character varying)::text, ('BIBLIOTHECAIRE'::character varying)::text]))
+    );
 
 create table penalties
 (
@@ -66,13 +59,13 @@ create table activity_logs
     foreign key (user_id) references users,
     constraint activity_logs_action_type_check
         check ((action_type)::text = ANY
-               (ARRAY [('EMPRUNT'::character varying)::text, ('RETOUR'::character varying)::text, ('RESERVATION'::character varying)::text, ('PROLONGATION'::character varying)::text, ('PENALITE'::character varying)::text, ('CREATION_LIVRE'::character varying)::text, ('SUPPRESSION_LIVRE'::character varying)::text, ('CONNEXION'::character varying)::text, ('MODIFICATION_UTILISATEUR'::character varying)::text]))
-);
+            (ARRAY [('EMPRUNT'::character varying)::text, ('RETOUR'::character varying)::text, ('RESERVATION'::character varying)::text, ('PROLONGATION'::character varying)::text, ('PENALITE'::character varying)::text, ('CREATION_LIVRE'::character varying)::text, ('SUPPRESSION_LIVRE'::character varying)::text, ('CONNEXION'::character varying)::text, ('MODIFICATION_UTILISATEUR'::character varying)::text]))
+    );
 
 create table loan_policies
 (
     id                        bigint default nextval('loan_policies_id_seq'::regclass) not null,
-    user_role                 varchar(255)                                             not null,
+    user_profil               varchar(255)                                             not null,
     loan_type                 varchar(255)                                             not null,
     max_loans                 integer                                                  not null,
     loan_duration_days        integer                                                  not null,
@@ -82,7 +75,7 @@ create table loan_policies
     penalty_days_per_late_day integer                                                  not null,
     primary key (id),
     constraint uq_user_role_type
-        unique (user_role, loan_type)
+        unique (user_profil, loan_type)
 );
 
 create table book_categories
@@ -107,9 +100,6 @@ create table books
     title       varchar(255)                                     not null,
     author      varchar(255),
     isbn        varchar(255),
-    category    varchar(100),
-    language    varchar(50),
-    description text,
     category_id bigint,
     language_id bigint,
     primary key (id),
@@ -129,8 +119,8 @@ create table book_copies
         on delete cascade,
     constraint book_copies_status_check
         check ((status)::text = ANY
-               (ARRAY [('DISPONIBLE'::character varying)::text, ('EMPRUNTE'::character varying)::text, ('RESERVE'::character varying)::text]))
-);
+            (ARRAY [('DISPONIBLE'::character varying)::text, ('EMPRUNTE'::character varying)::text, ('RESERVE'::character varying)::text]))
+    );
 
 create table loans
 (
@@ -166,7 +156,6 @@ create table reservations
     foreign key (user_id) references users,
     constraint reservations_status_check
         check ((status)::text = ANY
-               ((ARRAY ['EN_ATTENTE'::character varying, 'DISPONIBLE'::character varying, 'EXPIREE'::character varying])::text[]))
-);
-
+            ((ARRAY ['EN_ATTENTE'::character varying, 'DISPONIBLE'::character varying, 'EXPIREE'::character varying])::text[]))
+    );
 
